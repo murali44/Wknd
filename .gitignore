@@ -89,5 +89,6 @@ ENV/
 .ropeproject
 
 
-# phantomjs files
+# local files
 ghostdriver.log
+env.sh

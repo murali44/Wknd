@@ -1,5 +1,6 @@
 import argparse
 import configparser
+import smtplib
 import sys
 import time
 import datetime
@@ -34,6 +35,7 @@ def main():
         if found_depart_date != 0:
             print "found final"
             print "cost:{0}. leaving:{1} Arrving:{2}".format(desired_price, found_depart_date, found_return_date)
+            send_email(args.depart, args.arrive, desired_price, found_depart_date)
 
         # Keep scraping according to the interval the user specified.
         time.sleep(int(args.interval) * 60)
@@ -108,10 +110,14 @@ def parse_args():
     return args
 
 
-def send_email():
-    print("[%s] Found a deal. Desired total: $%s. Current Total: $%s." % (
-        datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-        args.desired_total, str(real_total)))
+def send_email(depart_from, arrive_to, final_price, depart_date):
+    server = smtplib.SMTP('smtp.gmail.com', 587)
+    server.starttls()
+    server.login(os.environ['WKND_FROM_EMAIL'], os.environ['WKND_PASSWORD'])
+    msg_body = "Found {0}->{1} deal. ${2}. Leaving {3}. On Southwest.".format(depart_from, arrive_to, final_price, depart_date)
+    msg = 'Subject: {0}\n\n{1}'.format("WKND Deal found.", msg_body)
+    server.sendmail(os.environ['WKND_FROM_EMAIL'], os.environ['WKND_TO_EMAIL'], msg)
+    server.quit()
     sys.exit()
 
 def scrape(args):
