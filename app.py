@@ -30,7 +30,7 @@ def main():
                 print "cost:{0}. leaving:{1} Arrving:{2}".format(desired_price, found_depart_date, found_return_date)
             else:
                 print "{0} -> {1}. Cheapest is {2} leaving on {3}. I'll keep looking.".format(args.depart, args.arrive, price, args.departure_date)
-            time.sleep(120)
+            time.sleep(100)
 
         if found_depart_date != 0:
             print "found final"
@@ -65,6 +65,7 @@ def parse_args():
         "--depart",
         "-d",
         type=str,
+        default='AUS',
         help="Origin airport code.")
 
     parser.add_argument(
@@ -90,19 +91,21 @@ def parse_args():
         "-p",
         action="store",
         type=str,
+        default=2,
         help="Number of passengers.")
 
     parser.add_argument(
         "--desired-total",
         "-dt",
         type=str,
+        default=250,
         help="Ceiling on the total cost of flights.")
 
     parser.add_argument(
         "--interval",
         "-i",
         type=str,
-        default=180,
+        default=40,
         help="Refresh time period.")
 
     args = parser.parse_args()
