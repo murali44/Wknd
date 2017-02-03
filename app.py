@@ -1,5 +1,5 @@
 import argparse
-import configparser
+import os
 import smtplib
 import sys
 import time
