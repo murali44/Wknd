@@ -200,6 +200,7 @@ def scrape(args):
     else:
         real_total = lowest_outbound_fare
 
+    browser.close()
     return real_total
 
 
