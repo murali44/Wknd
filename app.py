@@ -20,10 +20,20 @@ def main():
         desired_price = int(args.desired_total)
         found_depart_date = 0
         found_return_date = 0
-        for d in allfridays():
+        for d in allfridays(int(args.weekends)):
+            # PhantomJS is headless, so it doesn't open up a browser.
+            browser = webdriver.PhantomJS()
             args.departure_date = d.strftime('%m/%d/%Y')
             args.return_date = (d + datetime.timedelta(days=2)).strftime('%m/%d/%Y')
-            price = scrape(args)
+            try:
+                price = scrape(args, browser)
+            except:
+                pass
+            finally:
+                # kill the specific phantomjs child proc
+                browser.close()
+                browser.service.process.send_signal(signal.SIGTERM)
+                browser.quit()
             if price <= desired_price:
                 desired_price = price
                 found_depart_date = args.departure_date
@@ -42,12 +52,12 @@ def main():
         time.sleep(int(args.interval) * 60)
 
 
-def allfridays():
+def allfridays(weekends):
    d = datetime.date.today()
    while d.weekday() != 4:
        d += datetime.timedelta(1)
 
-   for x in range(24):
+   for x in range(weekends):
       yield d
       d += datetime.timedelta(days = 7)
 
@@ -103,6 +113,13 @@ def parse_args():
         help="Ceiling on the total cost of flights.")
 
     parser.add_argument(
+        "--weekends",
+        "-wk",
+        type=str,
+        default=24,
+        help="Number of weekends to search.")
+
+    parser.add_argument(
         "--interval",
         "-i",
         type=str,
@@ -113,19 +130,19 @@ def parse_args():
 
     return args
 
-
 def send_email(depart_from, arrive_to, final_price, depart_date):
-    server = smtplib.SMTP('smtp.gmail.com', 587)
-    server.starttls()
-    server.login(os.environ['WKND_FROM_EMAIL'], os.environ['WKND_PASSWORD'])
-    msg_body = "Found {0}->{1} deal. ${2}. Leaving {3}. On Southwest.".format(depart_from, arrive_to, final_price, depart_date)
-    msg = 'Subject: {0}\n\n{1}'.format("WKND Deal found.", msg_body)
-    server.sendmail(os.environ['WKND_FROM_EMAIL'], os.environ['WKND_TO_EMAIL'], msg)
-    server.quit()
+    try:
+        server = smtplib.SMTP('smtp.gmail.com', 587)
+        server.starttls()
+        server.login(os.environ['WKND_FROM_EMAIL'], os.environ['WKND_PASSWORD'])
+        msg_body = "Found {0}->{1} deal. ${2}. Leaving {3}. On Southwest.".format(depart_from, arrive_to, final_price, depart_date)
+        msg = 'Subject: {0}\n\n{1}'.format("WKND Deal found.", msg_body)
+        server.sendmail(os.environ['WKND_FROM_EMAIL'], os.environ['WKND_TO_EMAIL'], msg)
+        server.quit()
+    except:
+        pass
 
-def scrape(args):
-    # PhantomJS is headless, so it doesn't open up a browser.
-    browser = webdriver.PhantomJS()
+def scrape(args, browser):
     browser.get("https://www.southwest.com/")
     last_travel_date = browser.find_element_by_id("lastBookableDate").get_attribute("value")
     departure_date = datetime.datetime.strptime(args.departure_date, '%m/%d/%Y')
@@ -200,10 +217,6 @@ def scrape(args):
     else:
         real_total = lowest_outbound_fare
 
-    browser.close()
-    # kill the specific phantomjs child proc
-    browser.service.process.send_signal(signal.SIGTERM)
-    browser.quit()
     return real_total
 
 
