@@ -1,5 +1,6 @@
 import argparse
 import os
+import signal
 import smtplib
 import sys
 import time
@@ -30,7 +31,7 @@ def main():
                 print "cost:{0}. leaving:{1} Arrving:{2}".format(desired_price, found_depart_date, found_return_date)
             else:
                 print "{0} -> {1}. Cheapest is {2} leaving on {3}. I'll keep looking.".format(args.depart, args.arrive, price, args.departure_date)
-            time.sleep(100)
+            time.sleep(15)
 
         if found_depart_date != 0:
             print "found final"
@@ -121,7 +122,6 @@ def send_email(depart_from, arrive_to, final_price, depart_date):
     msg = 'Subject: {0}\n\n{1}'.format("WKND Deal found.", msg_body)
     server.sendmail(os.environ['WKND_FROM_EMAIL'], os.environ['WKND_TO_EMAIL'], msg)
     server.quit()
-    sys.exit()
 
 def scrape(args):
     # PhantomJS is headless, so it doesn't open up a browser.
@@ -201,6 +201,9 @@ def scrape(args):
         real_total = lowest_outbound_fare
 
     browser.close()
+    # kill the specific phantomjs child proc
+    browser.service.process.send_signal(signal.SIGTERM)
+    browser.quit()
     return real_total
 
 
