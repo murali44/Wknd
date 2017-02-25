@@ -92,3 +92,4 @@ ENV/
 # local files
 ghostdriver.log
 env.sh
+.DS_Store
