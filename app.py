@@ -3,8 +3,10 @@ import os
 import signal
 import smtplib
 import sys
+import json
 import time
 import datetime
+import db
 from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.by import By
@@ -38,28 +40,43 @@ def main():
                 desired_price = price
                 found_depart_date = args.departure_date
                 found_return_date = args.return_date
-                print "cost:{0}. leaving:{1} Arrving:{2}".format(desired_price, found_depart_date, found_return_date)
+                print "cost:{0}. leaving:{1} Arrving:{2}".format(
+                    desired_price, found_depart_date, found_return_date)
             else:
-                print "{0} -> {1}. Cheapest is {2} leaving on {3}. I'll keep looking.".format(args.depart, args.arrive, price, args.departure_date)
-            time.sleep(15)
+                print "{0}->{1}. Cheapest is {2} leaving on {3}. I'll keep looking.".format(args.origin, args.destination, price, args.departure_date)
+            # write to dynamoDB
+            response = db.get_item(args.destination, args.departure_date)
+            if 'Item' in response:
+                if response['Item']['Price'] != price:
+                    db.update_price(args.destination,
+                                    args.departure_date,
+                                    price)
+            else:
+                db.add_item(args.origin,
+                            args.destination,
+                            args.departure_date,
+                            args.return_date, price)
+            time.sleep(5)
 
         if found_depart_date != 0:
             print "found final"
-            print "cost:{0}. leaving:{1} Arrving:{2}".format(desired_price, found_depart_date, found_return_date)
-            send_email(args.depart, args.arrive, desired_price, found_depart_date)
+            print "cost:{0}. leaving:{1} Arrving:{2}".format(
+                desired_price, found_depart_date, found_return_date)
+            send_email(args.origin, args.destination,
+                       desired_price, found_depart_date)
 
         # Keep scraping according to the interval the user specified.
         time.sleep(int(args.interval) * 60)
 
 
 def allfridays(weekends):
-   d = datetime.date.today()
-   while d.weekday() != 4:
-       d += datetime.timedelta(1)
+    d = datetime.date.today()
+    while d.weekday() != 4:
+        d += datetime.timedelta(1)
 
-   for x in range(weekends):
-      yield d
-      d += datetime.timedelta(days = 7)
+    for x in range(weekends):
+        yield d
+        d += datetime.timedelta(days = 7)
 
 def parse_args():
     """
@@ -73,15 +90,15 @@ def parse_args():
         help="If present, the search will be limited to one-way tickets.")
 
     parser.add_argument(
-        "--depart",
-        "-d",
+        "--origin",
+        "-o",
         type=str,
         default='AUS',
         help="Origin airport code.")
 
     parser.add_argument(
-        "--arrive",
-        "-a",
+        "--destination",
+        "-d",
         type=str,
         help="Destination airport code.")
 
@@ -159,11 +176,11 @@ def scrape(args, browser):
 
     # Set the departing airport.
     depart_airport = browser.find_element_by_id("air-city-departure")
-    depart_airport.send_keys(args.depart)
+    depart_airport.send_keys(args.origin)
 
     # Set the arrival airport.
-    arrive_airport = browser.find_element_by_id("air-city-arrival")
-    arrive_airport.send_keys(args.arrive)
+    destination_airport = browser.find_element_by_id("air-city-arrival")
+    destination_airport.send_keys(args.destination)
 
     # Set departure date.
     depart_date = browser.find_element_by_id("air-date-departure")
