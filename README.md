@@ -3,7 +3,8 @@
 
 1. Clone this repository.
 2. Install required modules by `pip install -r requirements.txt`
-3. Download [PhantomJS](http://phantomjs.org/download.html) and put phantomjs.exe in your Scripts folder (Windows) or /usr/bin folder (Mac/Linux).
+3. Download [PhantomJS](http://phantomjs.org/download.html) and put phantomjs.exe in your Scripts folder (Windows) or /usr/bin folder
+(Mac/Linux. https://gist.github.com/julionc/7476620).
 
 ## Usage
 
