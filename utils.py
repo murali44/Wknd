@@ -4,7 +4,6 @@ import logging
 
 from logging.handlers import RotatingFileHandler
 
-PATH='wknd.log'
 
 def allfridays(weekends):
     d = datetime.date.today()
@@ -95,12 +94,3 @@ def parse_args():
     args = parser.parse_args()
 
     return args
-
-def log(message):
-    logger = logging.getLogger("Rotating Log")
-    logger.setLevel(logging.INFO)
-    # add a rotating handler
-    handler = RotatingFileHandler(PATH, maxBytes=50000, backupCount=5)
-    logger.addHandler(handler)
-
-    logger.info(message)

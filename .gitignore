@@ -93,4 +93,6 @@ ENV/
 ghostdriver.log
 env.sh
 .DS_Store
-.log
+wknd.log
+gcal.json
+wknd.db

@@ -61,7 +61,7 @@ def scrape(args, browser):
 
     for price in outbound_prices:
         realprice = price.text.replace("$", "")
-        outbound_array.append(int(realprice))
+        outbound_array.append(float(realprice))
 
     lowest_outbound_fare = min(outbound_array)
 
@@ -71,25 +71,11 @@ def scrape(args, browser):
 
         for price in return_prices:
             realprice = price.text.replace("$", "")
-            return_array.append(int(realprice))
+            return_array.append(float(realprice))
 
         lowest_return_fare = min(return_array)
         real_total = lowest_outbound_fare + lowest_return_fare
     else:
         real_total = lowest_outbound_fare
 
-    return real_total
-
-def get_price(args):
-    # PhantomJS is headless, so it doesn't open up a browser.
-    browser = webdriver.PhantomJS()
-    try:
-        price = scrape.scrape(args, browser)
-    except:
-        pass
-    finally:
-        browser.close()
-        browser.service.process.send_signal(signal.SIGTERM)
-        browser.quit()
-
-    return price
+    return float(real_total)

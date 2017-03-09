@@ -38,11 +38,11 @@ def update_db(args, price):
     response = get_item(args.arrive, args.departure_date)
     if 'Item' in response:
         if response['Item']['Price'] != price:
-            db.update_price(args.arrive,
-                            args.departure_date,
-                            price)
+            update_price(args.arrive,
+                         args.departure_date,
+                         price)
     else:
-        db.add_item(args.depart,
-                    args.arrive,
-                    args.departure_date,
-                    args.return_date, price)
+        add_item(args.depart,
+                 args.arrive,
+                 args.departure_date,
+                 args.return_date, price)
