@@ -88,7 +88,7 @@ def parse_args():
         "--interval",
         "-i",
         type=str,
-        default=40,
+        default=30,
         help="Refresh time period.")
 
     args = parser.parse_args()

@@ -16,7 +16,7 @@ PATH='wknd.log'
 LOGGER = logging.getLogger("Rotating Log")
 LOGGER.setLevel(logging.INFO)
 # add a rotating handler
-handler = RotatingFileHandler(PATH, maxBytes=50000, backupCount=5)
+handler = RotatingFileHandler(PATH, maxBytes=50000, backupCount=3)
 LOGGER.addHandler(handler)
 
 def main():
@@ -27,18 +27,23 @@ def main():
     desired_price = int(args.desired_total)
 
     while True:
+        sql_db.delete_old()
         for d in utils.allfridays(int(args.weekends)):
             args.departure_date = d.strftime('%m/%d/%Y')
             args.return_date = (d + datetime.timedelta(days=2)).strftime('%m/%d/%Y')
             price = get_price(args)
-            msg = "{0}->{1}. ${2} leaving on {3}.".format(args.depart,
-                                                          args.arrive,
-                                                          price,
-                                                          args.departure_date)
+            # Log
+            ts = time.time()
+            st = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
+            msg = "[{0}] {1}->{2}. ${3} on {4}.".format(st,
+                                                        args.depart,
+                                                        args.arrive,
+                                                        price,
+                                                        args.departure_date)
 
-            LOGGER.info(msg)
-            #sql_db.show_all()
             sql_db.update_db(args, price)
+            LOGGER.info(msg)
+            LOGGER.info(sql_db.show_all())
             if price <= desired_price: utils.send_email(args, price)
 
             time.sleep(5)

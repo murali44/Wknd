@@ -9,13 +9,15 @@ def close():
     conn.close()
 
 def delete_old():
+    today = datetime.date.today().strftime('%m/%d/%Y')
     cur.execute('''DELETE FROM wknd
                    WHERE departure_date < ?
-                ''', (datetime.date.today()))
+                ''', (today,))
+    conn.commit()
 
 def show_all():
     cur.execute('''SELECT * FROM wknd''')
-    response = cur.fetchall()
+    return cur.fetchall()
 
 def add_item(origin, destination, departure_date, return_date, cost, gcalEventId):
     cur.execute('''INSERT INTO wknd
@@ -31,7 +33,7 @@ def update_price(destination, departure_date, cost, gcalEventId):
                    SET price=?, gcalEventId=?
                    WHERE departure_date=?
                    AND destination=?
-                   ''', (cost, departure_date, destination))
+                   ''', (cost, gcalEventId, departure_date, destination))
     conn.commit()
 
 def get_item(destination, departure_date):
@@ -50,8 +52,6 @@ def get_item(destination, departure_date):
 def update_db(args, price):
     response = get_item(args.arrive, args.departure_date)
     if response:
-        gcal.update(args.arrive, price, args.departure_date,
-                    args.return_date, response['gcalEventId'])
         if response['price'] != price:
             gcalEventId = gcal.update(args.arrive, price, args.departure_date,
                                       args.return_date, response['gcalEventId'])

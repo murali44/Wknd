@@ -102,3 +102,12 @@ def update(destination, cost, departure_date, return_date, gcalEventId):
     service.events().update(calendarId='hvshhftv62u0qst16np8las1ek@group.calendar.google.com',
                             eventId=gcalEventId,
                             body=EVENT).execute()
+
+def delete(gcalEventId):
+    "Delete an existing event"
+    credentials = get_credentials()
+    http = credentials.authorize(httplib2.Http())
+    service = discovery.build('calendar', 'v3', http=http)
+
+    service.events().update(calendarId='hvshhftv62u0qst16np8las1ek@group.calendar.google.com',
+                            eventId=gcalEventId,).execute()

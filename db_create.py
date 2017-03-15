@@ -34,6 +34,3 @@ TABLE = DB.create_table(
 
 # Wait until the table exists.
 TABLE.meta.client.get_waiter('table_exists').wait(TableName='Wknd')
-
-# Print out some data about the table.
-print TABLE.item_count
