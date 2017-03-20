@@ -9,6 +9,7 @@ from oauth2client import client
 from oauth2client import tools
 from oauth2client.file import Storage
 
+import airport
 import datetime
 
 flags = None
@@ -70,7 +71,8 @@ def create(destination, cost, departure_date, return_date):
     http = credentials.authorize(httplib2.Http())
     service = discovery.build('calendar', 'v3', http=http)
 
-    EVENT['summary'] = '{0} ${1}'.format(destination, cost)
+    EVENT['summary'] = '{0}: ${1}'.format(airport.findCityByIATA(destination),
+                                          cost)
     EVENT['start']['date'] = departure_date
     EVENT['end']['date'] = return_date
 
@@ -95,7 +97,8 @@ def update(destination, cost, departure_date, return_date, gcalEventId):
     except errors.HttpError:
         return create(destination, cost, departure_date, return_date)
 
-    EVENT['summary'] = '{0} ${1}'.format(destination, cost)
+    EVENT['summary'] = '{0}: ${1}'.format(airport.findCityByIATA(destination),
+                                          cost)
     EVENT['start']['date'] = departure_date
     EVENT['end']['date'] = return_date
     # Update event
